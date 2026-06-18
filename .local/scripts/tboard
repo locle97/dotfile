@@ -4,6 +4,7 @@
 # Optional positional args place a command in each pane (reading order):
 #   $1 = top-left   $2 = right (full-height)   $3 = bottom-left
 # An empty string ('') or missing arg leaves that pane a bare shell.
+# With no args at all, the right pane defaults to `nvim ~/notes.md`.
 
 if test -z "$TMUX"
     echo "tboard: must be run inside a tmux session" >&2
@@ -20,8 +21,15 @@ tmux split-window -v -l 50%
 set bl (tmux display-message -p '#{pane_id}')
 
 # Place optional commands (empty/missing args leave a bare shell).
+# The right pane defaults to opening notes when no command is given.
 if test -n "$argv[1]"; tmux send-keys -t $tl "$argv[1]" Enter; end
-if test -n "$argv[2]"; tmux send-keys -t $r "$argv[2]" Enter; end
+if test -n "$argv[2]"
+    tmux send-keys -t $r "$argv[2]" Enter
+else if test -n "tuxedo"
+    tmux send-keys -t $r "tuxedo" Enter
+else if test (count $argv) -eq 0
+    tmux send-keys -t $r "nvim ~/notes.md" Enter
+end
 if test -n "$argv[3]"; tmux send-keys -t $bl "$argv[3]" Enter; end
 
 # Focus the top-left pane.
