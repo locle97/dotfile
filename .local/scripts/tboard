@@ -1,8 +1,8 @@
 #!/usr/bin/env fish
-# tboard — split the current tmux window into a 2x2 grid.
-# Columns: left 70% / right 30%.  Rows: 50% / 50%.
+# tboard — split the current tmux window into a 3-pane board.
+# Left column 70% holds 2 stacked rows; right column 30% spans full height.
 # Optional positional args place a command in each pane (reading order):
-#   $1 = top-left   $2 = top-right   $3 = bottom-left   $4 = bottom-right
+#   $1 = top-left   $2 = right (full-height)   $3 = bottom-left
 # An empty string ('') or missing arg leaves that pane a bare shell.
 
 if test -z "$TMUX"
@@ -14,18 +14,15 @@ end
 # sequence, so commands can be targeted regardless of pane reindexing.
 set tl (tmux display-message -p '#{pane_id}')
 tmux split-window -h -l 30%
-set tr (tmux display-message -p '#{pane_id}')
-tmux split-window -v -l 50%
-set br (tmux display-message -p '#{pane_id}')
+set r (tmux display-message -p '#{pane_id}')
 tmux select-pane -L
 tmux split-window -v -l 50%
 set bl (tmux display-message -p '#{pane_id}')
 
 # Place optional commands (empty/missing args leave a bare shell).
 if test -n "$argv[1]"; tmux send-keys -t $tl "$argv[1]" Enter; end
-if test -n "$argv[2]"; tmux send-keys -t $tr "$argv[2]" Enter; end
+if test -n "$argv[2]"; tmux send-keys -t $r "$argv[2]" Enter; end
 if test -n "$argv[3]"; tmux send-keys -t $bl "$argv[3]" Enter; end
-if test -n "$argv[4]"; tmux send-keys -t $br "$argv[4]" Enter; end
 
 # Focus the top-left pane.
 tmux select-pane -t $tl
